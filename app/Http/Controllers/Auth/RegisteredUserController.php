@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
-use Illuminate\Auth\Events\Registered;
+use App\Events\UserRegistered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,10 +13,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Traits\StripeTrait;
 
 
 class RegisteredUserController extends Controller
 {
+    use StripeTrait;
     /**
      * Display the registration view.
      */
@@ -39,22 +41,13 @@ class RegisteredUserController extends Controller
                 'password' => ['required', 'confirmed', Rules\Password::defaults()],
             ]);
 
-            \Stripe\Stripe::setApiKey( env('STRIPE_SECRET') );
-
-            $customer = \Stripe\Customer::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'description' => 'Coding project customer',
-            ]);
-
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'stripe_id' => $customer->id,
                 'password' => Hash::make($request->password),
             ]);
 
-            event(new Registered($user));
+            event(new UserRegistered($user));
 
             Auth::login($user);
 

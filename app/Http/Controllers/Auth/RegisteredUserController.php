@@ -57,5 +57,6 @@ class RegisteredUserController extends Controller
             //error in creating customer
             error_log($e->getMessage());
         }
+        return redirect(RouteServiceProvider::HOME);
     }
 }
